@@ -1,0 +1,14 @@
+{
+  "entrypoint": "static/templates/index.html",
+  "sources": [
+    "elements/src/**/*"
+  ],
+  "extraDependencies": [
+    "static/manifest.json"
+  ],
+  "lint": {
+    "rules": [
+      "polymer-2"
+    ]
+  }
+}

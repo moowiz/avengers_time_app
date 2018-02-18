@@ -1,0 +1,197 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="/bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="/bower_components/iron-label/iron-label.html">
+<link rel="import" href="/bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="/bower_components/vaadin-date-picker/vaadin-date-picker.html">
+
+
+<dom-module id="avengers-app">
+	<template>
+    <style>
+      :host {
+        display: block;
+			}
+			.vertical-list {
+					display: flex;
+					flex-direction: column;
+					flex-wrap: wrap;
+			}
+			.horiz-list {
+					display: flex;
+					flex-direction: row;
+					flex-wrap: wrap;
+			}
+			.center {
+							margin: auto;
+			}
+			.center-text{
+							text-align: center;
+			}
+			paper-checkbox {
+							padding: 0.5em;
+			}
+			.clickable {
+							cursor: pointer;
+			}
+			.movie-title {
+				font-family: "TradeGothicBold";
+			}
+    </style>
+		<iron-ajax
+						auto
+						url="/movies"
+						handle-as="json"
+						last-response="{{moviesRaw}}"
+						debounce-duration="300"></iron-ajax>
+		<iron-ajax
+						auto
+						url="/release"
+						handle-as="json"
+						last-response="{{releaseRaw}}"
+						debounce-duration="300"></iron-ajax>
+		<h1 class="center-text"> How long will it take to watch all Marvel movies?</h1>
+
+	<div class="center-text">
+		<iron-label>
+			Days to release:
+			<span>
+							[[releaseTime(release, selectedDate, "days")]]
+			</span>
+		</iron-label>
+		<div>
+			Weeks to release: [[releaseTime(release, selectedDate, "weeks")]]
+		</div>
+		<div>
+			Hours of runtime [[totalRuntime]]
+		</div>
+		<vaadin-date-picker label="Pick a date" value="{{selectedDate}}" max-date="[[vaFormat(release)]]">
+		</vaadin-date-picker>
+	</div>
+		<h2 class="clickable center-text" on-click="toggle">All Movies</h2>
+	<iron-collapse id="collapse" class="horiz-list center" opened>
+				<template is="dom-repeat" items="[[moviesByPhase(movies.*)]]">
+								<div class="center">
+										<h3>[[item.phase]]</h3>
+										<ul class="vertical-list">
+										<template is="dom-repeat" items="[[item.movies]]">
+														<paper-checkbox on-change="onCheckboxChange" checked="[[item.checked]]">
+																		<span class="movie-title">
+																						[[item.name]]
+																		</span>| [[item.runtime]]
+														</paper-checkbox>
+										</template>
+	</div>
+	</ul>
+	</template>
+	</iron-collapse>
+	</template>
+
+	<script src=" /bower_components/moment/moment.js "></script>
+	<script>
+		/**
+		 * @customElement
+		 * @polymer
+		 */
+		class AvengersApp extends Polymer.Element {
+			static get is() {
+				return 'avengers-app';
+			}
+			static get properties() {
+				return {
+					moviesRaw: {
+						type: Array,
+					},
+					movies: {
+						type: Array,
+						computed: '_computeMovies(moviesRaw.*)',
+					},
+					releaseRaw: {
+						type: String,
+					},
+					release: {
+						type: String,
+						computed: '_computeRelease(releaseRaw)',
+					},
+					selectedDate: {
+						type: String,
+					},
+					totalRuntime: {
+						type: Number,
+						computed: '_computeTotalRuntime(movies.*)',
+					},
+				};
+			}
+			ready() {
+				super.ready();
+				this.selectedDate = this.vaFormat(moment())
+			}
+			vaFormat(date) {
+				return date.format("YYYY-MM-DD");
+			}
+			_computeMovies(moviesRaw) {
+				moviesRaw = moviesRaw.base;
+				if (!moviesRaw) {
+					return [];
+				}
+				return moviesRaw.map((m) => {
+					if (!m.hasOwnProperty("checked")) {
+						m.checked = true;
+					}
+					return m;
+				});
+			}
+			_computeRelease(releaseRaw) {
+				return moment(releaseRaw);
+			}
+			_computeTotalRuntime(movies) {
+				movies = movies.base;
+				if (!movies) {
+					return undefined;
+				}
+				return movies.filter((m) => {
+					return m.checked
+				}).map((m) => m.runtime).reduce((x, y) => x + y) / 60;
+			}
+			releaseTime(release, selectedDate, unit) {
+				if (selectedDate == " " || release == undefined) {
+					return undefined;
+				}
+				return release.diff(moment(selectedDate), unit);
+			}
+			moviesByPhase(movies) {
+				movies = movies.base;
+				if (!movies) {
+					return undefined;
+				}
+				let byPhase = {};
+				movies.forEach((m) => {
+					if (!byPhase.hasOwnProperty(m.phase)) {
+						byPhase[m.phase] = [];
+					}
+					byPhase[m.phase].push(m)
+				});
+				return Object.keys(byPhase).map((phase) => {
+					return {
+						phase: phase,
+						movies: byPhase[phase],
+					};
+				});
+			}
+			toggle() {
+				this.$.collapse.toggle()
+			}
+			onCheckboxChange(e) {
+				let ind = -1;
+				this.movies.forEach((m, index) => {
+					if (m.name == e.model.item.name) {
+						ind = index;
+					}
+				});
+				this.set('moviesRaw.' + ind + '.checked', !e.model.item.checked);
+			}
+		}
+
+		window.customElements.define(AvengersApp.is, AvengersApp);
+	</script>
+	< /dom-module>

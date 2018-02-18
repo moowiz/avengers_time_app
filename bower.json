@@ -1,0 +1,17 @@
+{
+  "name": "avengers",
+  "main": "index.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0",
+    "iron-ajax": "PolymerElements/iron-ajax#^2.1.2",
+    "vaadin-date-picker": "vaadin/vaadin-date-picker#^2.0.7",
+    "moment": "^2.20.1",
+    "iron-collapse": "PolymerElements/iron-collapse#^2.2.0",
+    "paper-checkbox": "PolymerElements/paper-checkbox#^2.0.2",
+    "iron-label": "PolymerElements/iron-label#^2.1.0"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  }
+}

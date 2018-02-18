@@ -1,0 +1,12 @@
+runtime: go
+api_version: go1
+
+handlers:
+- url: /static
+  static_dir: static
+- url: /elements
+  static_dir: elements
+- url: /bower_components
+  static_dir: bower_components
+- url: /.*
+  script: _go_app
